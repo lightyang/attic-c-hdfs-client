@@ -301,6 +301,8 @@ void InputStreamImpl::seekToBlock(const LocatedBlock & lb) {
 
 bool InputStreamImpl::choseBestNode() {
     const std::vector<DatanodeInfo> & nodes = curBlock->getLocations();
+    auto &storageTypes = curBlock->getStorageTypes();
+    int candidate = -1;
 
     for (size_t i = 0; i < nodes.size(); ++i) {
         if (std::binary_search(failedNodes.begin(), failedNodes.end(),
@@ -308,8 +310,20 @@ bool InputStreamImpl::choseBestNode() {
             continue;
         }
 
-        curNode = nodes[i];
-        return true;
+        // always use SSD block if exists
+        if (storageTypes[i] == StorageTypeProto::SSD) {
+          curNode = nodes[i];
+          return true;
+        } else if (candidate == -1) {
+          // note down the first non-SSD block
+          candidate = i;
+        }
+    }
+
+    // use non-SSD block if no SSD available
+    if (candidate != -1) {
+      curNode = nodes[candidate];
+      return true;
     }
 
     return false;

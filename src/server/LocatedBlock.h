@@ -31,6 +31,7 @@
 #include "client/Token.h"
 #include "DatanodeInfo.h"
 #include "ExtendedBlock.h"
+#include "hdfs.pb.h"
 
 #include <vector>
 
@@ -44,6 +45,7 @@ namespace Internal {
  */
 class LocatedBlock: public ExtendedBlock {
 public:
+
     LocatedBlock() :
         offset(0), corrupt(false) {
     }
@@ -104,11 +106,24 @@ public:
         this->storageIDs = sid;
     }
 
+    const std::vector<StorageTypeProto> & getStorageTypes() const {
+        return storageTypes;
+    }
+
+    std::vector<StorageTypeProto> & mutableStorageTypes() {
+        return storageTypes;
+    }
+
+    void setStorageTypes(const std::vector<StorageTypeProto>& sid) {
+        this->storageTypes = sid;
+    }
+
 private:
     int64_t offset;
     bool corrupt;
     std::vector<DatanodeInfo> locs;
     std::vector<std::string> storageIDs;
+    std::vector<StorageTypeProto> storageTypes;
     Token token;
 };
 
